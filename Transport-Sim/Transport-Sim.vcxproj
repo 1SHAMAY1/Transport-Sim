@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{489EA2AC-B45E-1EE3-7D99-6760E91863BF}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Transport-Sim</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\bin\Debug\</OutDir>
+    <IntDir>..\build\Debug\</IntDir>
+    <TargetName>Transport-Sim</TargetName>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\bin\Release\</OutDir>
+    <IntDir>..\build\Release\</IntDir>
+    <TargetName>Transport-Sim</TargetName>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_GLFW_WIN32;GLFW_BUILD_WIN32;_CRT_SECURE_NO_WARNINGS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\vendor\glfw\include;..\vendor\glfw\deps;..\vendor\glad\include;..\vendor\imgui;..\vendor\imgui\backends;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_GLFW_WIN32;GLFW_BUILD_WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\vendor\glfw\include;..\vendor\glfw\deps;..\vendor\glad\include;..\vendor\imgui;..\vendor\imgui\backends;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Core\App.hpp" />
+    <ClInclude Include="..\src\Core\IntroScreen.hpp" />
+    <ClInclude Include="..\src\Core\Profiling.hpp" />
+    <ClInclude Include="..\src\Core\Simulation.hpp" />
+    <ClInclude Include="..\src\Core\UI.hpp" />
+    <ClInclude Include="..\src\Core\Vehicle.hpp" />
+    <ClInclude Include="..\src\Core\VehicleManager.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Core\App.cpp" />
+    <ClCompile Include="..\src\Core\IntroScreen.cpp" />
+    <ClCompile Include="..\src\Core\Profiling.cpp" />
+    <ClCompile Include="..\src\Core\Simulation.cpp" />
+    <ClCompile Include="..\src\Core\UI.cpp" />
+    <ClCompile Include="..\src\Core\Vehicle.cpp" />
+    <ClCompile Include="..\src\Core\VehicleManager.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\vendor\glad\src\glad.c" />
+    <ClCompile Include="..\vendor\glfw\src\context.c" />
+    <ClCompile Include="..\vendor\glfw\src\egl_context.c" />
+    <ClCompile Include="..\vendor\glfw\src\init.c" />
+    <ClCompile Include="..\vendor\glfw\src\input.c" />
+    <ClCompile Include="..\vendor\glfw\src\monitor.c" />
+    <ClCompile Include="..\vendor\glfw\src\null_init.c" />
+    <ClCompile Include="..\vendor\glfw\src\null_joystick.c" />
+    <ClCompile Include="..\vendor\glfw\src\null_monitor.c" />
+    <ClCompile Include="..\vendor\glfw\src\null_window.c" />
+    <ClCompile Include="..\vendor\glfw\src\osmesa_context.c" />
+    <ClCompile Include="..\vendor\glfw\src\platform.c" />
+    <ClCompile Include="..\vendor\glfw\src\vulkan.c" />
+    <ClCompile Include="..\vendor\glfw\src\wgl_context.c" />
+    <ClCompile Include="..\vendor\glfw\src\win32_init.c" />
+    <ClCompile Include="..\vendor\glfw\src\win32_joystick.c" />
+    <ClCompile Include="..\vendor\glfw\src\win32_module.c" />
+    <ClCompile Include="..\vendor\glfw\src\win32_monitor.c" />
+    <ClCompile Include="..\vendor\glfw\src\win32_thread.c" />
+    <ClCompile Include="..\vendor\glfw\src\win32_time.c" />
+    <ClCompile Include="..\vendor\glfw\src\win32_window.c" />
+    <ClCompile Include="..\vendor\glfw\src\window.c" />
+    <ClCompile Include="..\vendor\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\vendor\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\vendor\imgui\imgui.cpp" />
+    <ClCompile Include="..\vendor\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\vendor\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\vendor\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\vendor\imgui\imgui_widgets.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

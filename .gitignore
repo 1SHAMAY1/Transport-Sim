@@ -1,0 +1,70 @@
+# Build output
+bin/
+build/
+Bin/
+Bin-Intermediate/
+*.obj
+*.pdb
+*.lib
+*.exp
+*.dll
+*.exe
+*.ilk
+*.log
+*.pch
+*.idb
+*.suo
+*.sdf
+*.opensdf
+*.tlog
+*.ipch
+*.aps
+*.ncb
+*.user
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+*.vcxproj.user
+*.vcxproj.filters
+*.vs/
+
+# Premake
+Makefile
+*.make
+*.workspace
+*.project
+*.gch
+*.bak
+*.old
+*.depend
+*.o
+*.a
+*.so
+*.dylib
+*.swp
+*.DS_Store
+
+# OS junk
+Thumbs.db
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.code-workspace
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+
+# Logs
+*.log
+
+# Misc
+*.tmp
+*.temp
+*.bak
+*.old 
