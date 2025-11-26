@@ -1,7 +1,8 @@
 #include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip) {
+Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip) 
+    : m_Fov(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip) {
     m_ProjectionMatrix = glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip);
     RecalculateViewMatrix();
 }
@@ -54,4 +55,9 @@ void Camera::MoveUp(float amount) {
 
 void Camera::RecalculateViewMatrix() {
     m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Forward, m_Up);
+}
+
+void Camera::SetAspectRatio(float aspectRatio) {
+    m_AspectRatio = aspectRatio;
+    m_ProjectionMatrix = glm::perspective(glm::radians(m_Fov), m_AspectRatio, m_NearClip, m_FarClip);
 }

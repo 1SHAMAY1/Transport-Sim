@@ -8,13 +8,28 @@
 struct Edge;
 struct Node;
 
+enum class TrafficLightState {
+    RED,
+    YELLOW,
+    GREEN
+};
+
 // Node represents an intersection in the road network
 struct Node {
     int id;
     glm::vec3 position;  // 3D position
     std::vector<std::shared_ptr<Edge>> edges;  // Outgoing edges
     
-    Node(int id, const glm::vec3& pos) : id(id), position(pos) {}
+    // Traffic Light Data
+    TrafficLightState lightState = TrafficLightState::RED;
+    float lightTimer = 0.0f;
+    float greenDuration = 5.0f;  // Default duration
+    float redDuration = 5.0f;
+    
+    Node(int id, const glm::vec3& pos) : id(id), position(pos) {
+        // Randomize initial state
+        lightState = (id % 2 == 0) ? TrafficLightState::RED : TrafficLightState::GREEN;
+    }
 };
 
 // Edge represents a road connecting two nodes

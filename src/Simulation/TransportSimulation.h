@@ -20,6 +20,7 @@ public:
     
     // Add a vehicle at a specific node
     void AddVehicle(int startNodeId);
+    void SpawnVehicle();
     
 private:
     void CreateRoadNetwork();

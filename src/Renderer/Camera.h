@@ -15,6 +15,7 @@ public:
     
     void SetPosition(const glm::vec3& position);
     void SetRotation(float pitch, float yaw);
+    void SetAspectRatio(float aspectRatio);
     
     // Camera movement
     void MoveForward(float amount);
@@ -34,4 +35,9 @@ private:
     
     float m_Pitch = 0.0f;
     float m_Yaw = -90.0f;
+    
+    float m_Fov;
+    float m_AspectRatio;
+    float m_NearClip;
+    float m_FarClip;
 };

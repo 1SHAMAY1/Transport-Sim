@@ -48,9 +48,9 @@ Application::Application() {
         glfwTerminate();
         return;
     }
-
+    
     glfwMakeContextCurrent(s_Window);
-
+    
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return;
@@ -104,6 +104,11 @@ Application::Application() {
     std::cout << "Initialization complete!" << std::endl;
     std::cout << "Controls: SPACE = Toggle Auto/Manual Camera" << std::endl;
     std::cout << "  Manual: WASD = Move, QE = Up/Down, Arrows = Rotate" << std::endl;
+    
+    BuildGridMesh();
+    
+    glfwSetWindowUserPointer(s_Window, this);
+    glfwSetFramebufferSizeCallback(s_Window, OnResize);
 }
 
 Application::~Application() {
@@ -115,6 +120,16 @@ Application::~Application() {
     glDeleteBuffers(1, &m_CubeVBO);
     glDeleteVertexArrays(1, &m_LineVAO);
     glDeleteBuffers(1, &m_LineVBO);
+    
+    // Cleanup batch buffers
+    glDeleteVertexArrays(1, &m_BatchNodesVAO);
+    glDeleteBuffers(1, &m_BatchNodesVBO);
+    glDeleteVertexArrays(1, &m_BatchOneWayVAO);
+    glDeleteBuffers(1, &m_BatchOneWayVBO);
+    glDeleteVertexArrays(1, &m_BatchTwoWayVAO);
+    glDeleteBuffers(1, &m_BatchTwoWayVBO);
+    glDeleteVertexArrays(1, &m_BatchLightsVAO);
+    glDeleteBuffers(1, &m_BatchLightsVBO);
     
     if (s_Window) glfwDestroyWindow(s_Window);
     glfwTerminate();
@@ -205,40 +220,49 @@ void Application::Render() {
     RenderUI();
 }
 
-void Application::RenderGrid() {
+void Application::BuildGridMesh() {
     auto graph = m_Simulation->GetGraph();
+    std::vector<float> nodeVertices;
+    std::vector<float> oneWayVertices;
+    std::vector<float> twoWayVertices;
     
-    // Render pentagon nodes
+    // 1. Build Node Mesh (Pentagons)
     for (const auto& [id, node] : graph->GetNodes()) {
-        float pentagonVertices[] = {
-             0.0f,  0.5f, 0.0f, -0.48f, 0.15f, 0.0f, -0.29f, -0.4f, 0.0f,
-             0.29f, -0.4f, 0.0f, 0.48f,  0.15f, 0.0f
-        };
-        
-        glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(pentagonVertices), pentagonVertices, GL_DYNAMIC_DRAW);
-        glBindVertexArray(m_LineVAO);
-        
         float rotation = 0.0f;
         if (!node->edges.empty()) {
             glm::vec3 dir = glm::normalize(node->edges[0]->to->position - node->position);
             rotation = atan2(dir.x, dir.z);
         }
         
-        m_Shader->SetFloat4("u_Color", glm::vec4(0.9f, 0.9f, 0.95f, 1.0f));
-        
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, node->position + glm::vec3(0.0f, 0.1f, 0.0f));
         model = glm::rotate(model, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.8f, 1.0f, 0.8f));
         
-        m_Shader->SetMat4("u_Model", model);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 5);
+        // Pentagon vertices (local space)
+        float localVerts[] = {
+             0.0f,  0.5f, 0.0f, 
+            -0.48f, 0.15f, 0.0f, 
+            -0.29f, -0.4f, 0.0f,
+             0.29f, -0.4f, 0.0f, 
+             0.48f,  0.15f, 0.0f
+        };
+        
+        glm::vec3 v0 = glm::vec3(model * glm::vec4(localVerts[0], localVerts[1], localVerts[2], 1.0f));
+        glm::vec3 v1 = glm::vec3(model * glm::vec4(localVerts[3], localVerts[4], localVerts[5], 1.0f));
+        glm::vec3 v2 = glm::vec3(model * glm::vec4(localVerts[6], localVerts[7], localVerts[8], 1.0f));
+        glm::vec3 v3 = glm::vec3(model * glm::vec4(localVerts[9], localVerts[10], localVerts[11], 1.0f));
+        glm::vec3 v4 = glm::vec3(model * glm::vec4(localVerts[12], localVerts[13], localVerts[14], 1.0f));
+        
+        // Triangle 1
+        nodeVertices.insert(nodeVertices.end(), {v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z});
+        // Triangle 2
+        nodeVertices.insert(nodeVertices.end(), {v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z});
+        // Triangle 3
+        nodeVertices.insert(nodeVertices.end(), {v0.x, v0.y, v0.z, v3.x, v3.y, v3.z, v4.x, v4.y, v4.z});
     }
     
-    // Render roads with parallel lines for two-way
-    glBindVertexArray(m_LineVAO);
-    
+    // 2. Build Road Meshes
     for (const auto& [id, node] : graph->GetNodes()) {
         for (const auto& edge : node->edges) {
             bool isBidirectional = false;
@@ -250,53 +274,155 @@ void Application::RenderGrid() {
             }
             
             if (isBidirectional) {
-                // Two-way: Draw parallel green lines
-                m_Shader->SetFloat4("u_Color", glm::vec4(0.4f, 0.5f, 0.4f, 1.0f));
-                
-                glm::vec3 roadDir = glm::normalize(edge->to->position - node->position);
-                glm::vec3 perpendicular = glm::normalize(glm::cross(roadDir, glm::vec3(0.0f, 1.0f, 0.0f)));
-                float offset = 0.2f;
-                
-                // Line 1
-                glm::vec3 offset1 = perpendicular * offset;
-                float lineVertices1[] = {
-                    node->position.x + offset1.x, node->position.y, node->position.z + offset1.z,
-                    edge->to->position.x + offset1.x, edge->to->position.y, edge->to->position.z + offset1.z
-                };
-                
-                glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices1), lineVertices1, GL_DYNAMIC_DRAW);
-                
-                glm::mat4 model = glm::mat4(1.0f);
-                m_Shader->SetMat4("u_Model", model);
-                glDrawArrays(GL_LINES, 0, 2);
-                
-                // Line 2
-                glm::vec3 offset2 = perpendicular * -offset;
-                float lineVertices2[] = {
-                    node->position.x + offset2.x, node->position.y, node->position.z + offset2.z,
-                    edge->to->position.x + offset2.x, edge->to->position.y, edge->to->position.z + offset2.z
-                };
-                
-                glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices2), lineVertices2, GL_DYNAMIC_DRAW);
-                glDrawArrays(GL_LINES, 0, 2);
+                // Two-way: Parallel lines
+                if (node->id < edge->to->id) {
+                    glm::vec3 roadDir = glm::normalize(edge->to->position - node->position);
+                    glm::vec3 perp = glm::normalize(glm::cross(roadDir, glm::vec3(0.0f, 1.0f, 0.0f)));
+                    float offset = 0.2f;
+                    
+                    glm::vec3 p1 = node->position + perp * offset;
+                    glm::vec3 p2 = edge->to->position + perp * offset;
+                    glm::vec3 p3 = node->position - perp * offset;
+                    glm::vec3 p4 = edge->to->position - perp * offset;
+                    
+                    twoWayVertices.insert(twoWayVertices.end(), {p1.x, p1.y, p1.z, p2.x, p2.y, p2.z});
+                    twoWayVertices.insert(twoWayVertices.end(), {p3.x, p3.y, p3.z, p4.x, p4.y, p4.z});
+                }
             } else {
-                // One-way: Single red line
-                m_Shader->SetFloat4("u_Color", glm::vec4(0.5f, 0.3f, 0.3f, 1.0f));
-                
-                float lineVertices[] = {
+                // One-way: Single line + Arrow
+                oneWayVertices.insert(oneWayVertices.end(), {
                     node->position.x, node->position.y, node->position.z,
                     edge->to->position.x, edge->to->position.y, edge->to->position.z
-                };
+                });
                 
-                glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices), lineVertices, GL_DYNAMIC_DRAW);
+                // Arrow
+                glm::vec3 mid = (node->position + edge->to->position) * 0.5f;
+                glm::vec3 dir = glm::normalize(edge->to->position - node->position);
+                glm::vec3 right = glm::normalize(glm::cross(dir, glm::vec3(0.0f, 1.0f, 0.0f)));
+                float size = 0.5f;
                 
-                glm::mat4 model = glm::mat4(1.0f);
-                m_Shader->SetMat4("u_Model", model);
-                glDrawArrays(GL_LINES, 0, 2);
+                glm::vec3 tip = mid + dir * size;
+                glm::vec3 left = mid - dir * size + right * size;
+                glm::vec3 rightP = mid - dir * size - right * size;
+                
+                oneWayVertices.insert(oneWayVertices.end(), {tip.x, tip.y, tip.z, left.x, left.y, left.z});
+                oneWayVertices.insert(oneWayVertices.end(), {tip.x, tip.y, tip.z, rightP.x, rightP.y, rightP.z});
             }
         }
+    }
+    
+    // Upload to GPU
+    // Nodes
+    glGenVertexArrays(1, &m_BatchNodesVAO);
+    glGenBuffers(1, &m_BatchNodesVBO);
+    glBindVertexArray(m_BatchNodesVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_BatchNodesVBO);
+    glBufferData(GL_ARRAY_BUFFER, nodeVertices.size() * sizeof(float), nodeVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    m_BatchNodesCount = nodeVertices.size() / 3;
+    
+    // One-Way
+    glGenVertexArrays(1, &m_BatchOneWayVAO);
+    glGenBuffers(1, &m_BatchOneWayVBO);
+    glBindVertexArray(m_BatchOneWayVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_BatchOneWayVBO);
+    glBufferData(GL_ARRAY_BUFFER, oneWayVertices.size() * sizeof(float), oneWayVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    m_BatchOneWayCount = oneWayVertices.size() / 3;
+    
+    // Two-Way
+    glGenVertexArrays(1, &m_BatchTwoWayVAO);
+    glGenBuffers(1, &m_BatchTwoWayVBO);
+    glBindVertexArray(m_BatchTwoWayVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_BatchTwoWayVBO);
+    glBufferData(GL_ARRAY_BUFFER, twoWayVertices.size() * sizeof(float), twoWayVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    m_BatchTwoWayCount = twoWayVertices.size() / 3;
+    
+    // Init Lights Buffer (Dynamic)
+    glGenVertexArrays(1, &m_BatchLightsVAO);
+    glGenBuffers(1, &m_BatchLightsVBO);
+    glBindVertexArray(m_BatchLightsVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_BatchLightsVBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    glBindVertexArray(0);
+}
+
+void Application::RenderGrid() {
+    glm::mat4 identity = glm::mat4(1.0f);
+    m_Shader->SetMat4("u_Model", identity);
+    
+    // 1. Render Nodes
+    m_Shader->SetFloat4("u_Color", glm::vec4(0.9f, 0.9f, 0.95f, 1.0f));
+    glBindVertexArray(m_BatchNodesVAO);
+    glDrawArrays(GL_TRIANGLES, 0, m_BatchNodesCount);
+    
+    // 2. Render One-Way Roads
+    m_Shader->SetFloat4("u_Color", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
+    glBindVertexArray(m_BatchOneWayVAO);
+    glDrawArrays(GL_LINES, 0, m_BatchOneWayCount);
+    
+    // 3. Render Two-Way Roads
+    m_Shader->SetFloat4("u_Color", glm::vec4(0.4f, 0.5f, 0.4f, 1.0f));
+    glBindVertexArray(m_BatchTwoWayVAO);
+    glDrawArrays(GL_LINES, 0, m_BatchTwoWayCount);
+    
+    // 4. Render Traffic Lights (Dynamic Batching)
+    auto graph = m_Simulation->GetGraph();
+    std::vector<float> redLights;
+    std::vector<float> greenLights;
+    std::vector<float> yellowLights;
+    
+    // Cube template
+    float cube[] = {
+        -0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f, -0.5f,  0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f,  0.5f, -0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,  0.5f,  0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f,  0.5f,  0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f, -0.5f
+    };
+    
+    for (const auto& [id, node] : graph->GetNodes()) {
+        std::vector<float>* targetList = nullptr;
+        if (node->lightState == TrafficLightState::RED) targetList = &redLights;
+        else if (node->lightState == TrafficLightState::GREEN) targetList = &greenLights;
+        else targetList = &yellowLights;
+        
+        glm::vec3 pos = node->position + glm::vec3(0.0f, 3.0f, 0.0f);
+        float scale = 0.5f;
+        
+        for (int i = 0; i < 36; i++) {
+            targetList->push_back(pos.x + cube[i*3] * scale);
+            targetList->push_back(pos.y + cube[i*3+1] * scale);
+            targetList->push_back(pos.z + cube[i*3+2] * scale);
+        }
+    }
+    
+    glBindVertexArray(m_BatchLightsVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_BatchLightsVBO);
+    
+    if (!redLights.empty()) {
+        glBufferData(GL_ARRAY_BUFFER, redLights.size() * sizeof(float), redLights.data(), GL_DYNAMIC_DRAW);
+        m_Shader->SetFloat4("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        glDrawArrays(GL_TRIANGLES, 0, redLights.size() / 3);
+    }
+    
+    if (!greenLights.empty()) {
+        glBufferData(GL_ARRAY_BUFFER, greenLights.size() * sizeof(float), greenLights.data(), GL_DYNAMIC_DRAW);
+        m_Shader->SetFloat4("u_Color", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+        glDrawArrays(GL_TRIANGLES, 0, greenLights.size() / 3);
+    }
+    
+    if (!yellowLights.empty()) {
+        glBufferData(GL_ARRAY_BUFFER, yellowLights.size() * sizeof(float), yellowLights.data(), GL_DYNAMIC_DRAW);
+        m_Shader->SetFloat4("u_Color", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+        glDrawArrays(GL_TRIANGLES, 0, yellowLights.size() / 3);
     }
 }
 
@@ -364,7 +490,7 @@ void Application::RenderUI() {
     ImGui::TextColored(ImVec4(0.4f, 0.8f, 0.4f, 1.0f), "Network");
     auto graph = m_Simulation->GetGraph();
     ImGui::Text("Nodes: %zu", graph->GetNodeCount());
-    ImGui::Text("Grid: 12x12 (Single Level)");
+    ImGui::Text("Grid: 50x50 (Single Level)");
     
     int totalEdges = 0, oneWayEdges = 0, twoWayEdges = 0;
     for (const auto& [id, node] : graph->GetNodes()) {
@@ -403,4 +529,13 @@ void Application::RenderUI() {
     
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void Application::OnResize(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+    
+    Application* app = (Application*)glfwGetWindowUserPointer(window);
+    if (app && app->m_Camera) {
+        app->m_Camera->SetAspectRatio((float)width / (float)height);
+    }
 }
