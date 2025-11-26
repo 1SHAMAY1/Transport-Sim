@@ -1,7 +1,9 @@
-#include "Core/App.hpp"
- 
+#include <iostream>
+#include "Core/Application.h"
+
 int main() {
-    TransportSim::App app;
-    app.run();
+    Application* app = new Application();
+    app->Run();
+    delete app;
     return 0;
-} 
+}

@@ -48,8 +48,8 @@ project "Transport-Sim"
       "vendor/glfw/src/win32_time.c",
       "vendor/glfw/src/win32_thread.c",
       "vendor/glfw/src/win32_window.c",
-      "vendor/glfw/src/egl_context.c",         -- ✅ required for full context support
-      "vendor/glfw/src/osmesa_context.c",      -- ✅ required if linking static
+      "vendor/glfw/src/egl_context.c",         -- required for full context support
+      "vendor/glfw/src/osmesa_context.c",      -- required if linking static
       "vendor/glfw/src/platform.c",
       "vendor/glfw/src/null_init.c",        -- (REQUIRED for null platform stub)
       "vendor/glfw/src/null_monitor.c",
@@ -63,6 +63,7 @@ project "Transport-Sim"
       "vendor/glad/include",
       "vendor/imgui",
       "vendor/imgui/backends",
+      "vendor/glm",
       "src/"
    }
 

@@ -59,7 +59,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_GLFW_WIN32;GLFW_BUILD_WIN32;_CRT_SECURE_NO_WARNINGS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\vendor\glfw\include;..\vendor\glfw\deps;..\vendor\glad\include;..\vendor\imgui;..\vendor\imgui\backends;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\vendor\glfw\include;..\vendor\glfw\deps;..\vendor\glad\include;..\vendor\imgui;..\vendor\imgui\backends;..\vendor\glm;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -77,7 +77,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_GLFW_WIN32;GLFW_BUILD_WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\vendor\glfw\include;..\vendor\glfw\deps;..\vendor\glad\include;..\vendor\imgui;..\vendor\imgui\backends;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\vendor\glfw\include;..\vendor\glfw\deps;..\vendor\glad\include;..\vendor\imgui;..\vendor\imgui\backends;..\vendor\glm;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -95,22 +95,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\Core\App.hpp" />
-    <ClInclude Include="..\src\Core\IntroScreen.hpp" />
-    <ClInclude Include="..\src\Core\Profiling.hpp" />
-    <ClInclude Include="..\src\Core\Simulation.hpp" />
-    <ClInclude Include="..\src\Core\UI.hpp" />
-    <ClInclude Include="..\src\Core\Vehicle.hpp" />
-    <ClInclude Include="..\src\Core\VehicleManager.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\Core\App.cpp" />
-    <ClCompile Include="..\src\Core\IntroScreen.cpp" />
-    <ClCompile Include="..\src\Core\Profiling.cpp" />
-    <ClCompile Include="..\src\Core\Simulation.cpp" />
-    <ClCompile Include="..\src\Core\UI.cpp" />
-    <ClCompile Include="..\src\Core\Vehicle.cpp" />
-    <ClCompile Include="..\src\Core\VehicleManager.cpp" />
+    <ClCompile Include="..\src\Core\Application.cpp" />
+    <ClCompile Include="..\src\Renderer\Camera.cpp" />
+    <ClCompile Include="..\src\Renderer\Shader.cpp" />
+    <ClCompile Include="..\src\Simulation\Graph.cpp" />
+    <ClCompile Include="..\src\Simulation\Pathfinding.cpp" />
+    <ClCompile Include="..\src\Simulation\TransportSimulation.cpp" />
+    <ClCompile Include="..\src\Simulation\Vehicle.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\vendor\glad\src\glad.c" />
     <ClCompile Include="..\vendor\glfw\src\context.c" />
