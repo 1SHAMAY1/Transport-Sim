@@ -11,7 +11,8 @@ struct Node;
 enum class TrafficLightState {
     RED,
     YELLOW,
-    GREEN
+    GREEN,
+    OFF
 };
 
 // Node represents an intersection in the road network
@@ -20,16 +21,16 @@ struct Node {
     glm::vec3 position;  // 3D position
     std::vector<std::shared_ptr<Edge>> edges;  // Outgoing edges
     
-    // Traffic Light Data
-    TrafficLightState lightState = TrafficLightState::RED;
-    float lightTimer = 0.0f;
-    float greenDuration = 5.0f;  // Default duration
-    float redDuration = 5.0f;
+    // Traffic Light Data (Per-Path)
+    // Key: Neighbor ID (where the car is coming FROM), Value: Light State
+    std::unordered_map<int, TrafficLightState> incomingLights;
     
-    Node(int id, const glm::vec3& pos) : id(id), position(pos) {
-        // Randomize initial state
-        lightState = (id % 2 == 0) ? TrafficLightState::RED : TrafficLightState::GREEN;
-    }
+    int currentGreenNodeId = -1; // ID of the neighbor that currently has GREEN
+    float lightTimer = 0.0f;
+    float minGreenDuration = 3.0f;
+    float maxGreenDuration = 10.0f;
+    
+    Node(int id, const glm::vec3& pos) : id(id), position(pos) {}
 };
 
 // Edge represents a road connecting two nodes

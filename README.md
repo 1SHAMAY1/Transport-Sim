@@ -1,27 +1,5 @@
 # Transport Simulator 3D
 
-A high-performance 3D transport simulation built from scratch using C++20 and OpenGL 4.6. This project demonstrates the application of hardcore Data Structures and Algorithms (DSA) in a real-time rendering environment, featuring a custom engine, graph-based road networks, and autonomous vehicle navigation using A* pathfinding.
-
-## 🚀 Key Features
-
-### Core Engine
-- **Custom OpenGL Renderer**: Built from the ground up using modern OpenGL 4.6 (DSA - Direct State Access).
-- **Batch Rendering**: Optimized rendering pipeline that batches static geometry (nodes, roads) and dynamic elements (traffic lights) to minimize draw calls and maximize FPS.
-- **Camera System**: Flexible 3D camera with both automatic orbiting and manual free-flight modes.
-
-### Simulation Logic
-- **Graph Data Structure**: The road network is represented as a directed graph using adjacency lists, allowing for efficient traversal and connectivity checks.
-- **A* Pathfinding**: Autonomous vehicles calculate optimal routes in real-time using the A* algorithm with a priority queue.
-- **Traffic Systems**:
-    - **Traffic Lights**: Dynamic traffic light system with state machines (Red, Yellow, Green) controlling intersection flow.
-    - **Vehicle AI**: Vehicles obey traffic laws, stop at red lights, and navigate complex intersections.
-    - **Scale**: Simulates **100 autonomous vehicles** with constant respawning to maintain traffic density.
-
-### Visualization
-- **Real-time Stats**: Integrated ImGui dashboard showing network statistics (nodes, edges), vehicle counts, and performance metrics (FPS, Frame Time).
-- **Dynamic Lighting**: Visual representation of traffic light states and vehicle colors.
-
-## 🎮 Controls
 
 | Key | Action |
 | :--- | :--- |
